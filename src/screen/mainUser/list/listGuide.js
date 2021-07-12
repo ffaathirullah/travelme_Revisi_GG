@@ -7,6 +7,7 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
+import OrderModal from './listGuideModal';
 
 import StarRating from 'react-native-star-rating';
 import {useSelector} from 'react-redux';
@@ -15,9 +16,17 @@ import {withFirebase} from '../../../config/firebase/firebaseContext';
 
 import auth from '@react-native-firebase/auth';
 
-const ItemRender = ({item, firebase, navigation, idPlace, userInfo}) => {
+const ItemRender = ({
+  item,
+  firebase,
+  navigation,
+  idPlace,
+  onOrder,
+  userInfo,
+}) => {
   const [data, setData] = useState(null);
   const [myReview, setMyReview] = useState([]);
+
   const myUid = auth().currentUser.uid;
   const date = new Date().getTime();
 
@@ -87,15 +96,16 @@ const ItemRender = ({item, firebase, navigation, idPlace, userInfo}) => {
           </View>
         ) : (
           <TouchableOpacity
-            onPress={() =>
-              firebase.doUserReqGuide(
-                myUid,
-                data.id,
-                areaDestReducer.prov,
-                areaDestReducer.city,
-                idPlace,
-                date,
-              )
+            onPress={
+              () => onOrder(data)
+              // firebase.doUserReqGuide(
+              //   myUid,
+              //   data.id,
+              //   areaDestReducer.prov,
+              //   areaDestReducer.city,
+              //   idPlace,
+              //   date,
+              // )
             }
             disabled={alreadyReq}
             style={{
@@ -119,8 +129,15 @@ const ItemRender = ({item, firebase, navigation, idPlace, userInfo}) => {
 
 function listGuide({route, firebase, navigation}) {
   const {data, idPlace} = route.params;
+  const [modalVisible, setModalVisible] = useState(false);
+  const [guideData, setGuideData] = useState(null);
 
   const userInfo = useSelector((state) => state.userInfo);
+
+  const onOrder = (data) => {
+    setModalVisible(true);
+    setGuideData(data);
+  };
 
   return (
     <View
@@ -130,6 +147,13 @@ function listGuide({route, firebase, navigation}) {
         paddingVertical: 20,
         paddingHorizontal: 20,
       }}>
+      <OrderModal
+        setModalVisible={setModalVisible}
+        guideData={guideData}
+        idPlace={idPlace}
+        userInfo={userInfo}
+        modalVisible={modalVisible}
+      />
       <Text style={{fontSize: 20, textTransform: 'capitalize'}}>
         Daftar Guide di {'DATA NAMA TEMPAT'}
       </Text>
@@ -139,6 +163,7 @@ function listGuide({route, firebase, navigation}) {
         data={data}
         renderItem={({item}) => (
           <ItemRender
+            onOrder={onOrder}
             userInfo={userInfo}
             item={item}
             idPlace={idPlace}

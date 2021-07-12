@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {LogBox, StyleSheet, Text, View} from 'react-native';
 import FirebaseContext, {
   withFirebase,
 } from './src/config/firebase/firebaseContext';
@@ -17,7 +17,9 @@ class App extends Component {
     notifMan.configure;
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    LogBox.ignoreAllLogs(); //Ignore all log notifications
+  }
 
   render() {
     return (

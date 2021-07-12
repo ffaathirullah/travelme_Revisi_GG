@@ -306,21 +306,45 @@ export default class Firebase {
   };
 
   //! USER //! USER //! USER //! USER //! USER //! USER
-  doUserReqGuide = async (myUID, gUID, prov, city, placeUID, date) => {
+  doUserReqGuide = async (
+    myUID,
+    gUID,
+    prov,
+    city,
+    placeUID,
+    date,
+    duration,
+  ) => {
     try {
       await this.db
         .collection('user')
         .doc(myUID)
         .collection('myRequest')
         .doc(gUID)
-        .set({status: 'request', otherUid: gUID, date, prov, city, placeUID});
+        .set({
+          status: 'request',
+          otherUid: gUID,
+          date,
+          prov,
+          city,
+          placeUID,
+          duration: parseInt(duration, 10),
+        });
 
       await this.db
         .collection('user')
         .doc(gUID)
         .collection('myRequest')
         .doc(myUID)
-        .set({status: 'request', otherUid: myUID, date, prov, city, placeUID});
+        .set({
+          status: 'request',
+          otherUid: myUID,
+          date,
+          prov,
+          city,
+          placeUID,
+          duration: parseInt(duration, 10),
+        });
 
       return 'succed';
     } catch (error) {
