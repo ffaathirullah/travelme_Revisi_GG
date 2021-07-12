@@ -18,6 +18,43 @@ import {withFirebase} from '../../config/firebase/firebaseContext';
 
 const {width, height} = Dimensions.get('window');
 
+const TimeFormat = (time) => {
+  const date = new Date(time);
+
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  const day = date.getDay();
+  const dateTime = date.getDate();
+  const month = date.getMonth();
+  const year = date.getFullYear();
+
+  const hour = date.getHours();
+  const minute = date.getMinutes();
+
+  return {
+    year,
+    date: dateTime,
+    month: months[month],
+    day: days[day],
+    hour,
+    minute,
+  };
+};
+
 const ItemRenderAcc = ({item, firebase, myUid}) => {
   const [senderInfo, setSenderInfo] = useState({});
   const [placeInfo, setPlaceInfo] = useState({});
@@ -51,13 +88,12 @@ const ItemRenderAcc = ({item, firebase, myUid}) => {
             )
           }
           style={{
-            height: 30,
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: '#2D919A',
             borderRadius: 7,
             paddingHorizontal: 10,
-            paddingVertical: 10,
+            paddingVertical: 5,
           }}>
           <Text style={{color: '#fff'}}>Pesan</Text>
         </TouchableOpacity>
@@ -77,6 +113,7 @@ const ItemRenderAcc = ({item, firebase, myUid}) => {
             borderRadius: 5,
             justifyContent: 'center',
             alignItems: 'center',
+            alignSelf: 'flex-end',
           }}>
           <Text style={{color: '#fff'}}>Selesai</Text>
         </TouchableOpacity>
@@ -89,6 +126,9 @@ const ItemRenderReq = ({item, firebase, myUid}) => {
   const [placeInfo, setplaceInfo] = useState(null);
   const [guideInfo, setGuideInfo] = useState(null);
 
+  const {year, month, date, day, hour, minute} = TimeFormat(item.date);
+  const userInfo = useSelector((state) => state.userInfo);
+
   useEffect(() => {
     firebase
       .doGetPlaceDetail(item.prov, item.city, item.placeUID)
@@ -98,41 +138,49 @@ const ItemRenderReq = ({item, firebase, myUid}) => {
 
   return (
     <View style={styles.cardContainer}>
-      <View>
-        <Text style={{fontWeight: 'bold', fontSize: 14}}>
-          {placeInfo?.name}
-        </Text>
-        <Gap height={5} />
-        <Text>oleh: {guideInfo?.name}</Text>
+      <View style={styles.cardContent}>
+        <View>
+          <Text style={{fontWeight: 'bold', fontSize: 14}}>
+            {placeInfo?.name}
+          </Text>
+          <Gap height={5} />
+          <Text>oleh: {guideInfo?.name}</Text>
+        </View>
+        <View>
+          <TouchableOpacity
+            onPress={() => firebase.doGuideAcceptRequest(myUid, item.otherUid)}
+            style={styles.btnAcc}>
+            <Text style={{color: '#fff'}}>Terima</Text>
+          </TouchableOpacity>
+          <Gap height={5} />
+          <TouchableOpacity
+            onPress={() =>
+              firebase.doUserOrderToHistoryGuide(
+                myUid,
+                item.otherUid,
+                'rejected',
+              )
+            }
+            style={styles.btnIgnore}>
+            <Text>Tolak</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <View>
-        <TouchableOpacity
-          onPress={() => firebase.doGuideAcceptRequest(myUid, item.otherUid)}
-          style={{
-            backgroundColor: '#2D929A',
-            height: 25,
-            width: 70,
-            borderRadius: 5,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <Text style={{color: '#fff'}}>Terima</Text>
-        </TouchableOpacity>
-        <Gap height={5} />
-        <TouchableOpacity
-          onPress={() =>
-            firebase.doUserOrderToHistoryGuide(myUid, item.otherUid, 'rejected')
-          }
-          style={{
-            backgroundColor: '#EBEFEF',
-            height: 25,
-            width: 70,
-            borderRadius: 5,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <Text>Tolak</Text>
-        </TouchableOpacity>
+        <Gap height={10} />
+        <Text style={{fontWeight: 'bold'}}>Tanggal Pemesanan</Text>
+        <Text>
+          {hour}:{minute}/{day}-{date}-{month}-{year}
+        </Text>
+        <Gap height={10} />
+        <Text style={{fontWeight: 'bold'}}>Durasi</Text>
+        <Text>
+          {item.duration} Jam (
+          <Text style={{fontWeight: 'bold'}}>
+            Rp.{item?.duration * userInfo?.price}
+          </Text>
+          )
+        </Text>
       </View>
     </View>
   );
@@ -244,7 +292,6 @@ function home({firebase}) {
       <View>
         <Text style={{fontSize: 16, fontWeight: 'bold'}}>Pesanan Baru</Text>
         <Gap height={16} />
-
         <FlatList
           data={dataReq}
           keyExtractor={(item) => item.date.toString()}
@@ -263,13 +310,15 @@ const styles = StyleSheet.create({
   cardContainer: {
     left: 0,
     right: 0,
-    height: 80,
     paddingHorizontal: 20,
+    paddingVertical: 5,
     borderWidth: 0.2,
     borderColor: '#000',
     borderRadius: 10,
     marginVertical: 7,
     backgroundColor: '#fff',
+  },
+  cardContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -278,5 +327,21 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#2D929A',
     fontWeight: 'bold',
+  },
+  btnAcc: {
+    backgroundColor: '#2D929A',
+    height: 25,
+    width: 70,
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  btnIgnore: {
+    backgroundColor: '#EBEFEF',
+    height: 25,
+    width: 70,
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
