@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "974937427207",
+    "firebase_url": "https://travelme-3bc5c.firebaseio.com",
+    "project_id": "travelme-3bc5c",
+    "storage_bucket": "travelme-3bc5c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:974937427207:android:c67beccb2c6687b539c9a2",
+        "android_client_info": {
+          "package_name": "com.travelmeproj"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "974937427207-t39js5ii3nd85rbbjhcbgfdohcpbsuua.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.travelmeproj",
+            "certificate_hash": "10b948541ba684e0918c8ce05d988590a9a2d0a5"
+          }
+        },
+        {
+          "client_id": "974937427207-70tjjs9rsii7p6in5u81nc9mqgmtg727.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCptLzms8b_ZErpwfd-ZBSIdPkbhvK-NUQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "974937427207-70tjjs9rsii7p6in5u81nc9mqgmtg727.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
