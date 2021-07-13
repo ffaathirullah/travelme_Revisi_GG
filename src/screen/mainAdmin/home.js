@@ -74,7 +74,7 @@ function home({firebase, navigation, route}) {
         if (a.data.name > b.data.name) {
           return 1;
         }
-      } else {
+      } else if (!sortList) {
         if (a.data.name > b.data.name) {
           return -1;
         }
