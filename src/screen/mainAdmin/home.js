@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, Text, View, FlatList, Image, Button} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {TextInput, TouchableOpacity} from 'react-native-gesture-handler';
 import {withFirebase} from '../../config/firebase/firebaseContext';
 import firestore from '@react-native-firebase/firestore';
+import IconMaterial from 'react-native-vector-icons/MaterialIcons';
 
 import {useDispatch} from 'react-redux';
 
@@ -25,7 +26,6 @@ const ItemList = ({item, navigation}) => {
               {
                 width: 70,
                 height: 70,
-
                 marginHorizontal: 10,
               },
             ]}
@@ -43,8 +43,10 @@ const ItemList = ({item, navigation}) => {
 };
 
 function home({firebase, navigation, route}) {
-  const [listRequest, setListRequest] = useState([]);
-  // const deleteIndex = route.params?.deleteIndex;
+  const [listRequest, setListRequest] = useState(null);
+  const [tempListRequest, settempListRequest] = useState(listRequest);
+  const [sortList, setSortList] = useState(true);
+  const [searchVal, setSearchVal] = useState('');
   const dispatch = useDispatch();
 
   const logoutFunc = async () => {
@@ -54,29 +56,98 @@ function home({firebase, navigation, route}) {
     }
   };
 
+  const searchPlace = () => {
+    const check = listRequest.filter((a) =>
+      a.data.name.toLowerCase().includes(searchVal.toLowerCase()),
+    );
+    settempListRequest(check);
+  };
+
+  const sortListFunc = (ListReq, sortList) => {
+    const newList = [...ListReq];
+
+    newList.sort((a, b) => {
+      if (sortList) {
+        if (a.data.name < b.data.name) {
+          return -1;
+        }
+        if (a.data.name > b.data.name) {
+          return 1;
+        }
+      } else {
+        if (a.data.name > b.data.name) {
+          return -1;
+        }
+        if (a.data.name < b.data.name) {
+          return 1;
+        }
+      }
+      return 0;
+    });
+
+    return newList;
+  };
+
   useEffect(() => {
     const subscribe = navigation.addListener('focus', () =>
       firebase.doAdminGetRequestLocation().then((a) => setListRequest(a)),
     );
-
     return () => {
       subscribe;
     };
   }, [navigation]);
+
+  useEffect(() => {
+    settempListRequest(listRequest);
+    if (tempListRequest) {
+      settempListRequest((list) => {
+        const newList = sortListFunc(list);
+        return newList;
+      });
+    }
+  }, [sortList, listRequest]);
+
   return (
     <View>
-      <Button title="logout" onPress={() => logoutFunc()} />
-      {listRequest.map((item, idx) => (
-        <View key={idx}>
-          <ItemList item={item} navigation={navigation} />
-        </View>
-      ))}
-      {/* <FlatList
-        style={{margin: 20}}
-        data={listRequest}
-        keyExtractor={(a) => a.id}
-        renderItem={({item}) => ItemList(item, navigation)}
-      /> */}
+      <View style={styles.navBar}>
+        <TouchableOpacity style={styles.btnLogout} onPress={() => logoutFunc()}>
+          <IconMaterial name="logout" size={30} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setSortList((prev) => !prev)}
+          style={styles.btnSort}>
+          <IconMaterial name="sort" size={30} />
+        </TouchableOpacity>
+      </View>
+
+      <View
+        style={{
+          borderWidth: 0.2,
+          borderRadius: 10,
+          marginHorizontal: 20,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingHorizontal: 10,
+        }}>
+        <TextInput
+          style={{flex: 1}}
+          onChangeText={(val) => setSearchVal(val)}
+        />
+        <TouchableOpacity onPress={() => searchPlace()}>
+          <Text>Seach</Text>
+        </TouchableOpacity>
+      </View>
+      {tempListRequest && (
+        <FlatList
+          style={{margin: 20}}
+          data={tempListRequest}
+          keyExtractor={(a) => a.id}
+          renderItem={({item}) => (
+            <ItemList item={item} navigation={navigation} />
+          )}
+        />
+      )}
     </View>
   );
 }
@@ -94,5 +165,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  navBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+  },
+  btnLogout: {
+    alignSelf: 'flex-start',
+    margin: 5,
+    padding: 5,
+    transform: [{rotate: '180deg'}],
+  },
+  btnSort: {
+    margin: 5,
+    padding: 5,
   },
 });
